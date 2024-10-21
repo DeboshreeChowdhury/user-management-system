@@ -1,8 +1,7 @@
 // Backend: application services, accessible by URIs
 
-
 const express = require('express')
-const cors = require ('cors')
+const cors = require('cors')
 const dotenv = require('dotenv')
 dotenv.config()
 
@@ -10,136 +9,165 @@ const app = express();
 
 const dbService = require('./dbService');
 
-
 app.use(cors());
 app.use(express.json())
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 
-// create
-app.post('/insert', (request, response) => {
-    console.log("app: insert a row.");
-    // console.log(request.body); 
-
-    const {name} = request.body;
+//1. User registration
+app.post('/register', (request, response) => {
+    const { username, password, firstname, lastname, salary, age } = request.body;
     const db = dbService.getDbServiceInstance();
 
-    const result = db.insertNewName(name);
- 
-    // note that result is a promise
-    result 
-    .then(data => response.json({data: data})) // return the newly added row to frontend, which will show it
-   // .then(data => console.log({data: data})) // debug first before return by response
-   .catch(err => console.log(err));
-});
-
-
-
-
-// read 
-app.get('/getAll', (request, response) => {
-    
-    const db = dbService.getDbServiceInstance();
-
-    
-    const result =  db.getAllData(); // call a DB function
+    const result = db.registerUser(username, password, firstname, lastname, salary, age);
 
     result
-    .then(data => response.json({data: data}))
-    .catch(err => console.log(err));
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'User registration failed' });
+        });
 });
 
-
-app.get('/search/:name', (request, response) => { // we can debug by URL
-    
-    const {name} = request.params;
-    
-    console.log(name);
-
+//2. User sign-in
+app.post('/signin', (request, response) => {
+    const { username, password } = request.body;
     const db = dbService.getDbServiceInstance();
 
-    let result;
-    if(name === "all") // in case we want to search all
-       result = db.getAllData()
-    else 
-       result =  db.searchByName(name); // call a DB function
+    const result = db.signInUser(username, password);
 
     result
-    .then(data => response.json({data: data}))
-    .catch(err => console.log(err));
+        .then(data => {
+            if (data) {
+                response.json({ success: true, message: 'User signed in successfully', data });
+            } else {
+                response.status(401).json({ success: false, message: 'Invalid username or password' });
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'User sign-in failed' });
+        });
 });
 
-
-// update
-app.patch('/update', 
-     (request, response) => {
-          console.log("app: update is called");
-          //console.log(request.body);
-          const{id, name} = request.body;
-          console.log(id);
-          console.log(name);
-          const db = dbService.getDbServiceInstance();
-
-          const result = db.updateNameById(id, name);
-
-          result.then(data => response.json({success: true}))
-          .catch(err => console.log(err)); 
-
-     }
-);
-
-// delete service
-app.delete('/delete/:id', 
-     (request, response) => {     
-        const {id} = request.params;
-        console.log("delete");
-        console.log(id);
-        const db = dbService.getDbServiceInstance();
-
-        const result = db.deleteRowById(id);
-
-        result.then(data => response.json({success: true}))
-        .catch(err => console.log(err));
-     }
-)   
-
-// debug function, will be deleted later
-app.post('/debug', (request, response) => {
-    // console.log(request.body); 
-
-    const {debug} = request.body;
-    console.log(debug);
-
-    return response.json({success: true});
-});   
-
-// debug function: use http://localhost:5050/testdb to try a DB function
-// should be deleted finally
-app.get('/testdb', (request, response) => {
-    
+// 3. Search users by first or last name
+app.get('/searchByName', (request, response) => {
+    const { firstname, lastname } = request.query;
     const db = dbService.getDbServiceInstance();
 
-    
-    const result =  db.deleteById("14"); // call a DB function here, change it to the one you want
+    const result = db.searchByName(firstname, lastname);
 
     result
-    .then(data => response.json({data: data}))
-    .catch(err => console.log(err));
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search failed' });
+        });
 });
 
+//4. Search users by user ID (username)
+app.get('/searchById/:username', (request, response) => {
+    const { username } = request.params;
+    const db = dbService.getDbServiceInstance();
 
-// set up the web server listener
-// if we use .env to configure
-/*
-app.listen(process.env.PORT, 
-    () => {
-        console.log("I am listening on the configured port " + process.env.PORT)
-    }
-);
-*/
+    const result = db.searchById(username);
 
-// if we configure here directly
-app.listen(5050, 
-    () => {
-        console.log("I am listening on the fixed port 5050.")
-    }
-);
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search by ID failed' });
+        });
+});
+
+// 5. Search users by salary range
+app.get('/searchBySalary', (request, response) => {
+    const { minSalary, maxSalary } = request.query;
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.searchBySalaryRange(minSalary, maxSalary);
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search by salary range failed' });
+        });
+});
+
+//6. Search users by age range
+app.get('/searchByAge', (request, response) => {
+    const { minAge, maxAge } = request.query;
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.searchByAgeRange(minAge, maxAge);
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search by age range failed' });
+        });
+});
+
+//7. Search users who registered after a specific user
+app.get('/searchAfterUser/:username', (request, response) => {
+    const { username } = request.params;
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.searchUsersAfter(username);
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search after user failed' });
+        });
+});
+
+//8. Search users who never signed in
+app.get('/searchNeverSignedIn', (request, response) => {
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.searchUsersNeverSignedIn();
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search for users who never signed in failed' });
+        });
+});
+
+//9. Search users who registered on the same day as another user
+app.get('/searchSameDay/:username', (request, response) => {
+    const { username } = request.params;
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.searchUsersSameDay(username);
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search by registration date failed' });
+        });
+});
+
+//10. Return users registered today
+app.get('/registeredToday', (request, response) => {
+    const db = dbService.getDbServiceInstance();
+
+    const result = db.getUsersRegisteredToday();
+
+    result
+        .then(data => response.json({ success: true, data }))
+        .catch(err => {
+            console.log(err);
+            response.status(500).json({ success: false, message: 'Search for users registered today failed' });
+        });
+});
+
+// Web server listener
+app.listen(5050, () => {
+    console.log("I am listening on the fixed port 5050.");
+});

@@ -1,41 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="stylesheet.css">
-  <title>DB Project 1 new</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylesheet.css">
+    <title>User Management System</title>
 </head>
 <body>
-  <main>
-      <label>Name:</label>
-      <input type="text" id="name-input">
-      <button id="add-name-btn">Add Name</button>
- 
-     <br><br><br>
-     <div> 
-        <input placeholder="search by name" id="search-input">
-        <button id="search-btn">Search</button>
-     </div>
+    <main>
+        <h1>User Management System</h1>
+        
+        <!-- User Registration -->
+        <h2>User Registration</h2>
+        <label for="name-input">Username:</label>
+        <input type="text" id="name-input">
+        <button id="add-name-btn">Register User</button>
 
+        <br><br>
 
-     <table id="table">
-         <thead>
-             <th>Id</th>
-             <th>Name</th>
-             <th>Date Added</th>
-             <th>Delete</th>
-             <th>Edit</th>  
-         </thead>
-         <tbody></tbody>
-     </table>
+        <!-- User Sign-In -->
+        <h2>User Sign-In</h2>
+        <label for="sign-in-input">Username:</label>
+        <input type="text" id="sign-in-input">
+        <button id="sign-in-btn">Sign In</button>
 
-     <section hidden id="update-row">
-         <label>Name:</label>
-         <input type="text" id="update-name-input">
-         <button id="update-row-btn" value="">Update</button>
-    </section>
-</main>
-<script src="index.js"></script>
+        <br><br>
+
+        <!-- Search Users -->
+        <h2>Search Users</h2>
+        <input placeholder="Search by Name" id="search-input">
+        <button id="search-btn">Search by Name</button>
+
+        <br><br>
+        
+        <!-- Search by User ID -->
+        <label for="search-userid-input">Search by User ID:</label>
+        <input type="number" id="search-userid-input">
+        <button id="search-userid-btn">Search by User ID</button>
+
+        <br><br>
+
+        <!-- Search by Salary -->
+        <label for="salary-min-input">Salary Min:</label>
+        <input type="number" id="salary-min-input">
+        <label for="salary-max-input">Salary Max:</label>
+        <input type="number" id="salary-max-input">
+        <button id="search-salary-btn">Search by Salary</button>
+
+        <br><br>
+
+        <!-- Search by Age -->
+        <label for="age-min-input">Age Min:</label>
+        <input type="number" id="age-min-input">
+        <label for="age-max-input">Age Max:</label>
+        <input type="number" id="age-max-input">
+        <button id="search-age-btn">Search by Age</button>
+
+        <br><br>
+
+        <!-- Search Users Registered After -->
+        <h2>Search Users Registered After a Specific User</h2>
+        <label for="after-userid-input">Enter User ID (e.g., John):</label>
+        <input type="number" id="after-userid-input">
+        <button id="search-after-btn">Search After</button>
+
+        <br><br>
+
+        <!-- Search Users Never Signed In -->
+        <button id="search-never-signed-in-btn">Search Users Who Never Signed In</button>
+
+        <br><br>
+
+        <!-- Search Users Registered on Same Day -->
+        <h2>Search Users Registered on the Same Day</h2>
+        <label for="same-day-userid-input">Enter User ID (e.g., John):</label>
+        <input type="number" id="same-day-userid-input">
+        <button id="search-same-day-btn">Search Same Day</button>
+
+        <br><br>
+
+        <!-- Search Users Registered Today -->
+        <button id="search-today-btn">Search Users Registered Today</button>
+
+        <br><br>
+
+        <!-- Users Table -->
+        <table id="table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Salary</th>
+                    <th>Age</th>
+                    <th>Registration Date</th>
+                    <th>Last Sign-In Time</th>
+                    <th>Delete</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <!-- Update Row Section -->
+        <section hidden id="update-row">
+            <h2>Edit User</h2>
+            <label for="update-name-input">Username:</label>
+            <input type="text" id="update-name-input">
+            <button id="update-row-btn" value="">Update</button>
+        </section>
+    </main>
+    <script src="index.js"></script>
 </body>
 </html>
