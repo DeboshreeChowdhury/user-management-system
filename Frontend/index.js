@@ -1,5 +1,3 @@
-
-
 // This is the frontEnd that modifies the HTML page directly
 // event-based programming,such as document load, click a button
 
