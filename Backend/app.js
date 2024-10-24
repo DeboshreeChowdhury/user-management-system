@@ -1,145 +1,109 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const DbService = require('./dbService');
-
-// Initialize environment variables
-dotenv.config();
+const bodyParser = require('body-parser');
+const dbService = require('./dbService');
 
 const app = express();
-const PORT = process.env.PORT || 5050;
-
 app.use(cors());
-app.use(express.json()); // To handle JSON payloads
-app.use(express.urlencoded({ extended: false })); // To handle form data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
-// Initialize the database service
-const db = DbService.getDbServiceInstance();
-
-// Home route to ensure the app is running
-app.get('/', (req, res) => {
-    res.send('User Management System Backend is running.');
+// 1. Register a new user
+app.post('/register', (req, res) => {
+    const { username, password, firstname, lastname, salary, age, registerday } = req.body;
+    const db = dbService.getDbServiceInstance();
+    
+    db.registerUser(username, password, firstname, lastname, salary, age, registerday)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// User Registration Route
-app.post('/register', async (req, res) => {
-    const { username, password, firstname, lastname, salary, age } = req.body;
-
-    try {
-        const result = await db.registerUser(username, password, firstname, lastname, salary, age);
-        res.status(201).json({ success: true, data: result, message: "User registered successfully" });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// User Sign-in Route
-app.post('/signin', async (req, res) => {
+// 2. User sign-in
+app.post('/signin', (req, res) => {
     const { username, password } = req.body;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const result = await db.signInUser(username, password);
-        if (result) {
-            res.status(200).json({ success: true, message: "Sign-in successful" });
-        }
-    } catch (error) {
-        res.status(401).json({ success: false, message: error.message });
-    }
+    db.signInUser(username, password)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users by First or Last Name
-app.get('/search/name', async (req, res) => {
+// 3. Search users by first or last name
+app.get('/search/name', (req, res) => {
     const { firstname, lastname } = req.query;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchByName(firstname, lastname);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchByName(firstname, lastname)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users by Username (User ID)
-app.get('/search/id', async (req, res) => {
-    const { username } = req.query;
+// 4. Search users by user ID
+app.get('/search/userid/:id', (req, res) => {
+    const { id } = req.params;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchById(username);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchByUserId(id)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users by Salary Range
-app.get('/search/salary', async (req, res) => {
+// 5. Search users by salary range
+app.get('/search/salary', (req, res) => {
     const { minSalary, maxSalary } = req.query;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchBySalaryRange(minSalary, maxSalary);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchBySalaryRange(minSalary, maxSalary)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users by Age Range
-app.get('/search/age', async (req, res) => {
+// 6. Search users by age range
+app.get('/search/age', (req, res) => {
     const { minAge, maxAge } = req.query;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchByAgeRange(minAge, maxAge);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchByAgeRange(minAge, maxAge)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users who registered after a specific user (by ID)
-app.get('/search/after', async (req, res) => {
-    const { username } = req.query;
+// 7. Search users registered after a specific user
+app.get('/search/registeredAfter/:userid', (req, res) => {
+    const { userid } = req.params;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchUsersAfter(username);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchRegisteredAfter(userid)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users who never signed in
-app.get('/search/never-signed-in', async (req, res) => {
-    try {
-        const results = await db.searchUsersNeverSignedIn();
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+// 8. Search users who never signed in
+app.get('/search/noSignIn', (req, res) => {
+    const db = dbService.getDbServiceInstance();
+
+    db.searchNeverSignedIn()
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Search Users who registered on the same day as another user
-app.get('/search/same-day', async (req, res) => {
-    const { username } = req.query;
+// 9. Search users who registered on the same day as a specific user
+app.get('/search/registeredSameDay/:userid', (req, res) => {
+    const { userid } = req.params;
+    const db = dbService.getDbServiceInstance();
 
-    try {
-        const results = await db.searchUsersSameDay(username);
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    db.searchRegisteredSameDay(userid)
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Get Users registered today
-app.get('/search/registered-today', async (req, res) => {
-    try {
-        const results = await db.getUsersRegisteredToday();
-        res.status(200).json({ success: true, data: results });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+// 10. Return users who registered today
+app.get('/search/registeredToday', (req, res) => {
+    const db = dbService.getDbServiceInstance();
+
+    db.searchRegisteredToday()
+        .then(data => res.json({ success: true, data }))
+        .catch(err => res.status(500).json({ success: false, message: err.message }));
 });
 
-// Start the server
-app.listen(5050, () => {
-    console.log(`Server is running on port ${5050}`);
-});
+app.listen(5050, () => console.log('Server is running on port 5050'));

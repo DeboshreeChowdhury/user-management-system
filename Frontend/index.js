@@ -1,248 +1,146 @@
-// Define the base URL for the backend API
-const BASE_URL = 'http://localhost:5050';
+const registerForm = document.getElementById('registerForm');
+const signinForm = document.getElementById('signinForm');
+const searchForm = document.getElementById('searchForm');
+const searchByIdForm = document.getElementById('searchByIdForm');
+const salaryRangeForm = document.getElementById('salaryRangeForm');
+const ageRangeForm = document.getElementById('ageRangeForm');
+const searchAfterUserForm = document.getElementById('searchAfterUserForm');
+const searchNeverSignedInForm = document.getElementById('searchNeverSignedInForm');
+const searchSameDayForm = document.getElementById('searchSameDayForm');
+const searchTodayForm = document.getElementById('searchTodayForm');
+const resultsDiv = document.getElementById('results');
 
-// Handle user registration
-document.getElementById('register-form').addEventListener('submit', async (e) => {
+// Register User
+registerForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const username = document.getElementById('register-username').value;
-    const password = document.getElementById('register-password').value;
-    const firstname = document.getElementById('register-firstname').value;
-    const lastname = document.getElementById('register-lastname').value;
-    const salary = document.getElementById('register-salary').value;
-    const age = document.getElementById('register-age').value;
+    const data = {
+        username: document.getElementById('registerUsername').value,
+        password: document.getElementById('registerPassword').value,
+        firstname: document.getElementById('registerFirstname').value,
+        lastname: document.getElementById('registerLastname').value,
+        salary: document.getElementById('registerSalary').value,
+        age: document.getElementById('registerAge').value,
+        registerday: document.getElementById('registerDay').value
+    };
 
-    try {
-        const response = await fetch(`${BASE_URL}/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password, firstname, lastname, salary, age })
-        });
-        
-        const data = await response.json();
-        showMessage(data.message, data.success);
-    } catch (error) {
-        console.error('Error:', error);
-        showMessage('Something went wrong. Please try again.', false);
-    }
+    fetch('http://localhost:5050/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user sign-in
-document.getElementById('signin-form').addEventListener('submit', async (e) => {
+// Sign In User
+signinForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const username = document.getElementById('signin-username').value;
-    const password = document.getElementById('signin-password').value;
+    const data = {
+        username: document.getElementById('signinUsername').value,
+        password: document.getElementById('signinPassword').value
+    };
 
-    try {
-        const response = await fetch(`${BASE_URL}/signin`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await response.json();
-        showMessage(data.message, data.success);
-    } catch (error) {
-        console.error('Error:', error);
-        showMessage('Something went wrong. Please try again.', false);
-    }
+    fetch('http://localhost:5050/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user search by first and/or last name
-document.getElementById('search-name-form').addEventListener('submit', async (e) => {
+// Search Users by First/Last Name
+searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const firstname = document.getElementById('search-firstname').value;
-    const lastname = document.getElementById('search-lastname').value;
+    const firstname = document.getElementById('searchFirstname').value;
+    const lastname = document.getElementById('searchLastname').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/name`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ firstname, lastname })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch(`http://localhost:5050/search/name?firstname=${firstname}&lastname=${lastname}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user search by user ID
-document.getElementById('search-id-form').addEventListener('submit', async (e) => {
+// Search User by ID
+searchByIdForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const username = document.getElementById('search-username-id').value;
+    const id = document.getElementById('searchById').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/id`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch(`http://localhost:5050/search/userid/${id}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user search by salary range
-document.getElementById('search-salary-form').addEventListener('submit', async (e) => {
+// Search Users by Salary Range
+salaryRangeForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const salaryMin = document.getElementById('salary-min').value;
-    const salaryMax = document.getElementById('salary-max').value;
+    const minSalary = document.getElementById('minSalary').value;
+    const maxSalary = document.getElementById('maxSalary').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/salary`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ salaryMin, salaryMax })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch(`http://localhost:5050/search/salary?minSalary=${minSalary}&maxSalary=${maxSalary}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user search by age range
-document.getElementById('search-age-form').addEventListener('submit', async (e) => {
+// Search Users by Age Range
+ageRangeForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const ageMin = document.getElementById('age-min').value;
-    const ageMax = document.getElementById('age-max').value;
+    const minAge = document.getElementById('minAge').value;
+    const maxAge = document.getElementById('maxAge').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/age`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ ageMin, ageMax })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch(`http://localhost:5050/search/age?minAge=${minAge}&maxAge=${maxAge}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle user search who registered after a specific user
-document.getElementById('search-after-form').addEventListener('submit', async (e) => {
+// Search users who registered after a specific user
+searchAfterUserForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const username = document.getElementById('search-after-username').value;
+    const id = document.getElementById('afterUserId').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/after`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch(`http://localhost:5050/search/registeredafter/${id}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle users who never signed in
-document.getElementById('search-never-signed-in').addEventListener('click', async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/search/never-signed-in`);
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
-});
-
-// Handle users registered on the same day as a specific user
-document.getElementById('search-same-day-form').addEventListener('submit', async (e) => {
+// Search users who never signed in
+searchNeverSignedInForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    const username = document.getElementById('search-same-day-username').value;
 
-    try {
-        const response = await fetch(`${BASE_URL}/search/same-day`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username })
-        });
-        
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    fetch('http://localhost:5050/search/neversignedin')
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Handle users who registered today
-document.getElementById('search-today').addEventListener('click', async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/search/today`);
-        const data = await response.json();
-        displaySearchResults(data.results);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+// Search users who registered on the same day as a specific user
+searchSameDayForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('sameDayUserId').value;
+
+    fetch(`http://localhost:5050/search/sameday/${id}`)
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
 });
 
-// Display search results in the results table
-function displaySearchResults(users) {
-    const resultsTableBody = document.getElementById('search-results-body');
-    resultsTableBody.innerHTML = ''; // Clear previous results
+// Return users who registered today
+searchTodayForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-    if (users.length === 0) {
-        resultsTableBody.innerHTML = '<tr><td colspan="6">No results found.</td></tr>';
-        return;
-    }
+    fetch('http://localhost:5050/search/registeredtoday')
+    .then(response => response.json())
+    .then(data => showResults(data))
+    .catch(err => console.error('Error:', err));
+});
 
-    users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${user.username}</td>
-            <td>${user.firstname}</td>
-            <td>${user.lastname}</td>
-            <td>${user.salary}</td>
-            <td>${user.age}</td>
-            <td>${user.registerday}</td>
-            <td>${user.signintime || 'Never signed in'}</td>
-        `;
-        resultsTableBody.appendChild(row);
-    });
-}
-
-// Show messages to the user
-function showMessage(message, success) {
-    const messageElement = document.getElementById('message');
-    messageElement.textContent = message;
-    messageElement.className = success ? 'message success' : 'message error';
-    messageElement.style.display = 'block';
-
-    setTimeout(() => {
-        messageElement.style.display = 'none';
-    }, 3000);
+// Display results
+function showResults(data) {
+    resultsDiv.innerHTML = JSON.stringify(data, null, 2);
 }

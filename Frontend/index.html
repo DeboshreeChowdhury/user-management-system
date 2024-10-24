@@ -7,98 +7,89 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>User Management System</h1>
-        
-        <!-- User Registration Form -->
-        <form id="register-form">
-            <h2>Register User</h2>
-            <input type="text" id="register-username" placeholder="Username" required>
-            <input type="password" id="register-password" placeholder="Password" required>
-            <input type="text" id="register-firstname" placeholder="First Name" required>
-            <input type="text" id="register-lastname" placeholder="Last Name" required>
-            <input type="number" id="register-salary" placeholder="Salary" required>
-            <input type="number" id="register-age" placeholder="Age" required>
-            <button type="submit">Register</button>
-        </form>
+    <h1>User Management System</h1>
 
-        <!-- User Sign In Form -->
-        <form id="signin-form">
-            <h2>Sign In</h2>
-            <input type="text" id="signin-username" placeholder="Username" required>
-            <input type="password" id="signin-password" placeholder="Password" required>
-            <button type="submit">Sign In</button>
-        </form>
+    <!-- Register User Form -->
+    <h2>Register User</h2>
+    <form id="registerForm">
+        <input type="text" id="registerUsername" placeholder="Username" required><br>
+        <input type="password" id="registerPassword" placeholder="Password" required><br>
+        <input type="text" id="registerFirstname" placeholder="First Name" required><br>
+        <input type="text" id="registerLastname" placeholder="Last Name" required><br>
+        <input type="number" id="registerSalary" placeholder="Salary" required><br>
+        <input type="number" id="registerAge" placeholder="Age" required><br>
+        <input type="date" id="registerDay" placeholder="Register Day" required><br>
+        <button type="submit">Register</button>
+    </form>
 
-        <!-- Search Users Section -->
-        <h2>Search Users</h2>
-        <form id="search-form">
-            <input type="text" id="search-firstname" placeholder="First Name">
-            <input type="text" id="search-lastname" placeholder="Last Name">
-            <button type="button" onclick="searchUsers()">Search</button>
-        </form>
+    <!-- Sign In Form -->
+    <h2>Sign In</h2>
+    <form id="signinForm">
+        <input type="text" id="signinUsername" placeholder="Username" required><br>
+        <input type="password" id="signinPassword" placeholder="Password" required><br>
+        <button type="submit">Sign In</button>
+    </form>
 
-        <h2>Advanced Searches</h2>
-        <!-- Search by User ID -->
-        <form id="search-id-form">
-            <input type="text" id="search-userid" placeholder="Search by User ID">
-            <button type="button" onclick="searchByUserId()">Search by User ID</button>
-        </form>
+    <!-- Search Users by First/Last Name -->
+    <h2>Search Users</h2>
+    <form id="searchForm">
+        <input type="text" id="searchFirstname" placeholder="First Name"><br>
+        <input type="text" id="searchLastname" placeholder="Last Name"><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search by Salary -->
-        <form id="search-salary-form">
-            <input type="number" id="salary-min" placeholder="Minimum Salary">
-            <input type="number" id="salary-max" placeholder="Maximum Salary">
-            <button type="button" onclick="searchBySalary()">Search by Salary</button>
-        </form>
+    <!-- Search by User ID -->
+    <h2>Search User by ID</h2>
+    <form id="searchByIdForm">
+        <input type="text" id="searchById" placeholder="User ID" required><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search by Age -->
-        <form id="search-age-form">
-            <input type="number" id="age-min" placeholder="Minimum Age">
-            <input type="number" id="age-max" placeholder="Maximum Age">
-            <button type="button" onclick="searchByAge()">Search by Age</button>
-        </form>
+    <!-- Search by Salary Range -->
+    <h2>Search by Salary Range</h2>
+    <form id="salaryRangeForm">
+        <input type="number" id="minSalary" placeholder="Min Salary" required><br>
+        <input type="number" id="maxSalary" placeholder="Max Salary" required><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search Users Who Registered After Specific User -->
-        <form id="search-after-form">
-            <input type="text" id="after-username" placeholder="User ID of Reference User (e.g., john)">
-            <button type="button" onclick="searchAfterUser()">Search After User</button>
-        </form>
+    <!-- Search by Age Range -->
+    <h2>Search by Age Range</h2>
+    <form id="ageRangeForm">
+        <input type="number" id="minAge" placeholder="Min Age" required><br>
+        <input type="number" id="maxAge" placeholder="Max Age" required><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search Users Who Never Signed In -->
-        <button type="button" onclick="searchNeverSignedIn()">Search Users Who Never Signed In</button>
+    <!-- Search users who registered after a specific user -->
+    <h2>Search Users Registered After Specific User</h2>
+    <form id="searchAfterUserForm">
+        <input type="text" id="afterUserId" placeholder="User ID" required><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search Users Registered on Same Day -->
-        <form id="search-same-day-form">
-            <input type="text" id="same-day-username" placeholder="User ID of Reference User (e.g., john)">
-            <button type="button" onclick="searchSameDay()">Search Registered on Same Day</button>
-        </form>
+    <!-- Search users who never signed in -->
+    <h2>Search Users Who Never Signed In</h2>
+    <form id="searchNeverSignedInForm">
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Return Users Registered Today -->
-        <button type="button" onclick="returnUsersRegisteredToday()">Return Users Registered Today</button>
+    <!-- Search users who registered on the same day as a specific user -->
+    <h2>Search Users Registered on Same Day as Specific User</h2>
+    <form id="searchSameDayForm">
+        <input type="text" id="sameDayUserId" placeholder="User ID" required><br>
+        <button type="submit">Search</button>
+    </form>
 
-        <!-- Search Results Section -->
-        <div id="search-results">
-            <h2>Search Results</h2>
-            <div class="message" id="result-message"></div>
-            <table id="results-table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Salary</th>
-                        <th>Age</th>
-                        <th>Register Day</th>
-                        <th>Sign In Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Results will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Return users who registered today -->
+    <h2>Return Users Registered Today</h2>
+    <form id="searchTodayForm">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Results Section -->
+    <h2>Results</h2>
+    <div id="results"></div>
 
     <script src="index.js"></script>
 </body>
