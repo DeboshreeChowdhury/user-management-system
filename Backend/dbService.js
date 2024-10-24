@@ -13,6 +13,7 @@ const connection = mysql.createConnection({
     port: process.env.DB_PORT || 3306
 });
 
+// Connect to MySQL database
 connection.connect((err) => {
     if (err) {
         console.log('Error connecting to the database:', err.message);
@@ -29,12 +30,27 @@ class DbService {
         return instance;
     }
 
-    // User registration
+    // Helper function to wrap MySQL query in a Promise
+    queryPromise(query, params = []) {
+        return new Promise((resolve, reject) => {
+            connection.query(query, params, (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
+
+    // User registration (password hashing included)
     async registerUser(username, password, firstname, lastname, salary, age) {
         try {
+            const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
             const registerDay = new Date(); // current date
-            const query = "INSERT INTO users (username, password, firstname, lastname, salary, age, registerday) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            const result = await this.queryPromise(query, [username, password, firstname, lastname, salary, age, registerDay]);
+            const query = `INSERT INTO users (username, password, firstname, lastname, salary, age, registerday) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const result = await this.queryPromise(query, [username, hashedPassword, firstname, lastname, salary, age, registerDay]);
             return result;
         } catch (error) {
             console.error("Error during user registration:", error);
@@ -49,12 +65,12 @@ class DbService {
             const results = await this.queryPromise(query, [username]);
 
             if (results.length > 0) {
-                const isMatch = await bcrypt.compare(password, results[0].password); // compare hashed passwords
+                const isMatch = await bcrypt.compare(password, results[0].password); // Compare hashed passwords
                 if (isMatch) {
                     const signInTime = new Date(); // current datetime
                     const updateQuery = "UPDATE users SET signintime = ? WHERE username = ?";
                     await this.queryPromise(updateQuery, [signInTime, username]);
-                    return true; // success
+                    return true; // Successful sign-in
                 } else {
                     throw new Error("Incorrect password.");
                 }
@@ -79,7 +95,7 @@ class DbService {
         }
     }
 
-    // Search users by username
+    // Search users by username (user ID)
     async searchById(username) {
         try {
             const query = "SELECT * FROM users WHERE username = ?";
@@ -163,17 +179,29 @@ class DbService {
         }
     }
 
-    // Helper function to wrap MySQL query in a Promise
-    queryPromise(query, params = []) {
-        return new Promise((resolve, reject) => {
-            connection.query(query, params, (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
-                }
-            });
-        });
+    // Insert a new name into the 'names' table
+    async insertName(name) {
+        try {
+            const dateAdded = new Date(); // Current date
+            const query = "INSERT INTO names (name, date_added) VALUES (?, ?)";
+            const result = await this.queryPromise(query, [name, dateAdded]);
+            return result;
+        } catch (error) {
+            console.error("Error during name insertion:", error);
+            throw new Error("Insert name failed.");
+        }
+    }
+
+    // Get all names from the 'names' table
+    async getAllNames() {
+        try {
+            const query = "SELECT * FROM names";
+            const results = await this.queryPromise(query);
+            return results;
+        } catch (error) {
+            console.error("Error during getting all names:", error);
+            throw new Error("Get all names failed.");
+        }
     }
 }
 

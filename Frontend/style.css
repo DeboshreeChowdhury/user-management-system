@@ -42,7 +42,7 @@ form input[type="text"],
 form input[type="password"], 
 form input[type="number"], 
 form input[type="date"] {
-    width: 100%;
+    width: calc(100% - 22px); /* Adjust for padding and borders */
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #ddd;

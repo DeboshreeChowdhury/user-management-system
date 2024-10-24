@@ -1,203 +1,145 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const bcrypt = require('bcrypt'); // For password hashing
+const DbService = require('./dbService');
+
+// Initialize environment variables
 dotenv.config();
 
 const app = express();
-const dbService = require('./dbService');
+const PORT = process.env.PORT || 5050;
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // To handle JSON payloads
+app.use(express.urlencoded({ extended: false })); // To handle form data
 
-// User registration
-app.post('/register', async (request, response) => {
-    const { username, password, firstname, lastname, salary, age } = request.body;
-    const db = dbService.getDbServiceInstance();
+// Initialize the database service
+const db = DbService.getDbServiceInstance();
+
+// Home route to ensure the app is running
+app.get('/', (req, res) => {
+    res.send('User Management System Backend is running.');
+});
+
+// User Registration Route
+app.post('/register', async (req, res) => {
+    const { username, password, firstname, lastname, salary, age } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-        const result = await db.registerUser(username, hashedPassword, firstname, lastname, salary, age);
-        
+        const result = await db.registerUser(username, password, firstname, lastname, salary, age);
+        res.status(201).json({ success: true, data: result, message: "User registered successfully" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// User Sign-in Route
+app.post('/signin', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const result = await db.signInUser(username, password);
         if (result) {
-            response.json({ success: true, message: 'User registered successfully!', data: result });
-        } else {
-            response.status(400).json({ success: false, message: 'User registration failed. Please try again.' });
+            res.status(200).json({ success: true, message: "Sign-in successful" });
         }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Internal server error during registration' });
+    } catch (error) {
+        res.status(401).json({ success: false, message: error.message });
     }
 });
 
-// User sign-in
-app.post('/signin', async (request, response) => {
-    const { username, password } = request.body;
-    const db = dbService.getDbServiceInstance();
+// Search Users by First or Last Name
+app.get('/search/name', async (req, res) => {
+    const { firstname, lastname } = req.query;
 
     try {
-        const user = await db.getUserByUsername(username); // Fetch user info by username
-        if (user) {
-            const validPassword = await bcrypt.compare(password, user.password); // Validate password
-            if (validPassword) {
-                const signInResult = await db.signInUser(username); // Update sign-in time
-                response.json({ success: true, message: 'User signed in successfully!', data: signInResult });
-            } else {
-                response.status(401).json({ success: false, message: 'Incorrect password!' });
-            }
-        } else {
-            response.status(404).json({ success: false, message: 'User not found!' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Error during sign-in' });
+        const results = await db.searchByName(firstname, lastname);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users by first or last name
-app.get('/searchByName', async (request, response) => {
-    const { firstname, lastname } = request.query;
-    const db = dbService.getDbServiceInstance();
+// Search Users by Username (User ID)
+app.get('/search/id', async (req, res) => {
+    const { username } = req.query;
 
     try {
-        const data = await db.searchByName(firstname, lastname);
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found with the provided name(s).' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search by name failed' });
+        const results = await db.searchById(username);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users by username (ID)
-app.get('/searchById/:username', async (request, response) => {
-    const { username } = request.params;
-    const db = dbService.getDbServiceInstance();
+// Search Users by Salary Range
+app.get('/search/salary', async (req, res) => {
+    const { minSalary, maxSalary } = req.query;
 
     try {
-        const data = await db.searchById(username);
-        if (data) {
-            response.json({ success: true, data });
-        } else {
-            response.status(404).json({ success: false, message: 'User not found' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search by ID failed' });
+        const results = await db.searchBySalaryRange(minSalary, maxSalary);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users by salary range
-app.get('/searchBySalary', async (request, response) => {
-    const { minSalary, maxSalary } = request.query;
-    const db = dbService.getDbServiceInstance();
+// Search Users by Age Range
+app.get('/search/age', async (req, res) => {
+    const { minAge, maxAge } = req.query;
 
     try {
-        const data = await db.searchBySalaryRange(minSalary, maxSalary);
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found in the specified salary range.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search by salary range failed' });
+        const results = await db.searchByAgeRange(minAge, maxAge);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users by age range
-app.get('/searchByAge', async (request, response) => {
-    const { minAge, maxAge } = request.query;
-    const db = dbService.getDbServiceInstance();
+// Search Users who registered after a specific user (by ID)
+app.get('/search/after', async (req, res) => {
+    const { username } = req.query;
 
     try {
-        const data = await db.searchByAgeRange(minAge, maxAge);
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found in the specified age range.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search by age range failed' });
+        const results = await db.searchUsersAfter(username);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users who registered after a specific user
-app.get('/searchAfterUser/:username', async (request, response) => {
-    const { username } = request.params;
-    const db = dbService.getDbServiceInstance();
+// Search Users who never signed in
+app.get('/search/never-signed-in', async (req, res) => {
+    try {
+        const results = await db.searchUsersNeverSignedIn();
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Search Users who registered on the same day as another user
+app.get('/search/same-day', async (req, res) => {
+    const { username } = req.query;
 
     try {
-        const data = await db.searchUsersAfter(username);
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found who registered after the specified user.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search after user failed' });
+        const results = await db.searchUsersSameDay(username);
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users who never signed in
-app.get('/searchNeverSignedIn', async (request, response) => {
-    const db = dbService.getDbServiceInstance();
-
+// Get Users registered today
+app.get('/search/registered-today', async (req, res) => {
     try {
-        const data = await db.searchUsersNeverSignedIn();
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found who never signed in.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search for users who never signed in failed' });
+        const results = await db.getUsersRegisteredToday();
+        res.status(200).json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Search users who registered on the same day as another user
-app.get('/searchSameDay/:username', async (request, response) => {
-    const { username } = request.params;
-    const db = dbService.getDbServiceInstance();
-
-    try {
-        const data = await db.searchUsersSameDay(username);
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users found who registered on the same day.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search by registration date failed' });
-    }
-});
-
-// Return users registered today
-app.get('/registeredToday', async (request, response) => {
-    const db = dbService.getDbServiceInstance();
-
-    try {
-        const data = await db.getUsersRegisteredToday();
-        if (data.length > 0) {
-            response.json({ success: true, data });
-        } else {
-            response.json({ success: false, message: 'No users registered today.' });
-        }
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ success: false, message: 'Search for users registered today failed' });
-    }
-});
-
-// Web server listener
+// Start the server
 app.listen(5050, () => {
-    console.log("Listening on port 5050.");
+    console.log(`Server is running on port ${5050}`);
 });
