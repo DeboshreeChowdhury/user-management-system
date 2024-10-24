@@ -140,7 +140,7 @@ searchTodayForm.addEventListener('submit', (e) => {
     .catch(err => console.error('Error:', err));
 });
 
-// Display results
+// Display results in a readable format
 function showResults(data) {
-    resultsDiv.innerHTML = JSON.stringify(data, null, 2);
+    resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
 }
