@@ -45,4 +45,8 @@ Frontend: Contains the user interface for interacting with the system.
 #index.html: The main HTML file.
 #index.js: Contains JavaScript code to interact with the backend.
 
-
+# how to compile:
+git clone <repository_url>
+cd user-management-system
+npm install
+Set up database and tables...
